@@ -1,18 +1,19 @@
-# 📊 NFHS India Dashboard
+# 📊 National Family Health Survey (NFHS) Dashboard
 
-Interactive Streamlit dashboard built using National Family Health Survey data.
+An interactive Streamlit dashboard built using NFHS data.
 
 ## Features
 - State & Year filters
 - KPI metrics
 - Interactive visualizations
 - Trend analysis
-
-## Live App
-(Add link after deployment)
+- Clean UI
 
 ## Tech Stack
 - Python
 - Streamlit
 - Pandas
 - Plotly
+
+## Live App
+(Deployment link will be added here)
