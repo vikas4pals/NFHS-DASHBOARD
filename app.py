@@ -2,96 +2,121 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# Page config
+# -----------------------------
+# Page Config
+# -----------------------------
 st.set_page_config(page_title="NFHS India Dashboard", layout="wide")
+st.title("📊 National Family Health Survey (NFHS) Dashboard")
 
-st.title("📊 All India National Family Health Survey Dashboard")
-
-# Load data
+# -----------------------------
+# Load Data
+# -----------------------------
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/All India National Family Health Survey.csv")
+    df = pd.read_csv("All India National Family Health Survey (2).csv")
     return df
 
 df = load_data()
 
-# Show raw data
-with st.expander("🔍 View Raw Data"):
-    st.dataframe(df)
+# Clean column names
+df.columns = df.columns.str.strip()
 
+# -----------------------------
 # Sidebar Filters
-st.sidebar.header("Filter Options")
+# -----------------------------
+st.sidebar.header("🔎 Filter Data")
 
-# Select State (if column exists)
-if "State" in df.columns:
+# Select State (if exists)
+state_col = [col for col in df.columns if "state" in col.lower()]
+year_col = [col for col in df.columns if "year" in col.lower()]
+
+filtered_df = df.copy()
+
+if state_col:
     states = st.sidebar.multiselect(
         "Select State(s)",
-        options=df["State"].unique(),
-        default=df["State"].unique()
+        options=sorted(df[state_col[0]].dropna().unique()),
+        default=sorted(df[state_col[0]].dropna().unique())
     )
-    df = df[df["State"].isin(states)]
+    filtered_df = filtered_df[filtered_df[state_col[0]].isin(states)]
 
-# Select Year (if column exists)
-if "Year" in df.columns:
+if year_col:
     years = st.sidebar.multiselect(
         "Select Year(s)",
-        options=df["Year"].unique(),
-        default=df["Year"].unique()
+        options=sorted(df[year_col[0]].dropna().unique()),
+        default=sorted(df[year_col[0]].dropna().unique())
     )
-    df = df[df["Year"].isin(years)]
+    filtered_df = filtered_df[filtered_df[year_col[0]].isin(years)]
 
+# -----------------------------
+# Raw Data View
+# -----------------------------
+with st.expander("📂 View Raw Data"):
+    st.dataframe(filtered_df)
+
+# -----------------------------
+# KPI Section
+# -----------------------------
 st.subheader("📌 Key Metrics")
 
-col1, col2, col3 = st.columns(3)
-
-numeric_cols = df.select_dtypes(include='number').columns
+numeric_cols = filtered_df.select_dtypes(include="number").columns
 
 if len(numeric_cols) >= 3:
-    col1.metric(numeric_cols[0], round(df[numeric_cols[0]].mean(), 2))
-    col2.metric(numeric_cols[1], round(df[numeric_cols[1]].mean(), 2))
-    col3.metric(numeric_cols[2], round(df[numeric_cols[2]].mean(), 2))
+    col1, col2, col3 = st.columns(3)
+    col1.metric(numeric_cols[0], round(filtered_df[numeric_cols[0]].mean(), 2))
+    col2.metric(numeric_cols[1], round(filtered_df[numeric_cols[1]].mean(), 2))
+    col3.metric(numeric_cols[2], round(filtered_df[numeric_cols[2]].mean(), 2))
 
-st.subheader("📈 Data Visualization")
+# -----------------------------
+# Visualization Section
+# -----------------------------
+st.subheader("📈 Visual Analysis")
 
-# Select column to visualize
-selected_column = st.selectbox(
-    "Select Indicator",
-    numeric_cols
-)
+if len(numeric_cols) > 0:
 
-# Bar chart by state (if state column exists)
-if "State" in df.columns:
-    fig = px.bar(
-        df,
-        x="State",
-        y=selected_column,
-        color="State",
-        title=f"{selected_column} by State"
-    )
-else:
-    fig = px.histogram(
-        df,
-        x=selected_column,
-        title=f"Distribution of {selected_column}"
+    selected_metric = st.selectbox(
+        "Select Indicator to Visualize",
+        numeric_cols
     )
 
-st.plotly_chart(fig, use_container_width=True)
+    chart_type = st.radio(
+        "Select Chart Type",
+        ["Bar Chart", "Line Chart", "Histogram"]
+    )
 
-# Time trend (if Year exists)
-if "Year" in df.columns:
-    st.subheader("📊 Trend Over Time")
+    if state_col and chart_type == "Bar Chart":
+        fig = px.bar(
+            filtered_df,
+            x=state_col[0],
+            y=selected_metric,
+            color=state_col[0],
+            title=f"{selected_metric} by State"
+        )
 
-    if "State" in df.columns:
-        trend_df = df.groupby(["Year"])[selected_column].mean().reset_index()
+    elif year_col and chart_type == "Line Chart":
+        grouped = filtered_df.groupby(year_col[0])[selected_metric].mean().reset_index()
+        fig = px.line(
+            grouped,
+            x=year_col[0],
+            y=selected_metric,
+            markers=True,
+            title=f"{selected_metric} Trend Over Time"
+        )
+
     else:
-        trend_df = df.groupby("Year")[selected_column].mean().reset_index()
+        fig = px.histogram(
+            filtered_df,
+            x=selected_metric,
+            title=f"Distribution of {selected_metric}"
+        )
 
-    fig2 = px.line(
-        trend_df,
-        x="Year",
-        y=selected_column,
-        markers=True,
-        title=f"{selected_column} Trend Over Time"
-    )
+    st.plotly_chart(fig, use_container_width=True)
 
-    st.plotly_chart(fig2, use_container_width=True)
+else:
+    st.warning("No numeric columns available for visualization.")
+
+# -----------------------------
+# Footer
+# -----------------------------
+st.markdown("---")
+st.markdown("Built with ❤️ using Streamlit")
