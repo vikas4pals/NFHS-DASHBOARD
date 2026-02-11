@@ -24,7 +24,7 @@ def load_data():
 st.sidebar.header("🔎 Filter Data")
 
 # Select State (if exists)
-state_col = [col for col in df.columns if "state" in col.lower()]
+
 year_col = [col for col in df.columns if "year" in col.lower()]
 
 filtered_df = df.copy()
