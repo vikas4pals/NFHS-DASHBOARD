@@ -16,8 +16,7 @@ def load_data():
     df = pd.read_csv("All India National Family Health Survey (2).csv")
     return df
 
-# Clean column names
-df.columns = df.columns.str.strip()
+
 
 # -----------------------------
 # Sidebar Filters
