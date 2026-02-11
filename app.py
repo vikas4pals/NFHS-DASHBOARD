@@ -10,7 +10,7 @@ st.title("📊 All India National Family Health Survey Dashboard")
 # Load data
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/All India National Family Health Survey.csv")
+    df = pd.read_csv("/mnt/data/All India National Family Health Survey.csv")
     return df
 
 df = load_data()
