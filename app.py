@@ -27,7 +27,7 @@ st.sidebar.header("🔎 Filter Data")
 
 
 
-filtered_df = df.copy()
+
 
 if state_col:
     states = st.sidebar.multiselect(
