@@ -25,7 +25,7 @@ st.sidebar.header("🔎 Filter Data")
 
 # Select State (if exists)
 
-year_col = [col for col in df.columns if "year" in col.lower()]
+
 
 filtered_df = df.copy()
 
